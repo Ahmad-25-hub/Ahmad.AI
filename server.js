@@ -18,50 +18,91 @@ app.post("/api/generate", async (req, res) => {
     }
 
     const prompt = String(req.body?.prompt || "").trim();
+    const contentsParam = req.body?.contents;
 
-    if (!prompt) {
+    if (!prompt && (!Array.isArray(contentsParam) || contentsParam.length === 0)) {
       return res.status(400).json({
         error: "Prompt tidak boleh kosong."
       });
     }
 
+    const contentsPayload =
+      Array.isArray(contentsParam) && contentsParam.length > 0
+        ? contentsParam
+        : [
+            {
+              role: "user",
+              parts: [{ text: prompt }]
+            }
+          ];
+
+    // Set headers for SSE streaming
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }]
-            }
-          ]
+          contents: contentsPayload
         })
       }
     );
 
-    const data = await response.json();
-
     if (!response.ok) {
-      return res.status(response.status).json({
-        error: data?.error?.message || "Gagal memanggil Gemini API."
-      });
+      const data = await response.json().catch(() => ({}));
+      res.write(`data: ${JSON.stringify({ error: data?.error?.message || "Gagal memanggil Gemini API." })}\n\n`);
+      return res.end();
     }
 
-    const text =
-      data?.candidates?.[0]?.content?.parts
-        ?.map((part) => part.text || "")
-        .join("")
-        .trim() || "Tidak ada jawaban dari model.";
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
 
-    res.json({ text });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("data: ")) {
+          const jsonStr = trimmed.substring(6).trim();
+          if (jsonStr) {
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const textChunk =
+                parsed?.candidates?.[0]?.content?.parts
+                  ?.map((part) => part.text || "")
+                  .join("") || "";
+              if (textChunk) {
+                res.write(`data: ${JSON.stringify({ text: textChunk })}\n\n`);
+              }
+            } catch (e) {
+              // ignore parse errors for partial chunks
+            }
+          }
+        }
+      }
+    }
+
+    res.write("data: [DONE]\n\n");
+    res.end();
   } catch (error) {
-    res.status(500).json({
-      error: error.message || "Terjadi kesalahan di server lokal."
-    });
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message || "Terjadi kesalahan di server lokal." });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+      res.end();
+    }
   }
 });
 

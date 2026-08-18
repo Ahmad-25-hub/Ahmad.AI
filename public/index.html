@@ -1,40 +1,146 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Latihan Gemini API</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <main class="app-shell">
-      <section class="workspace" aria-label="Gemini prompt workspace">
-        <div class="intro">
-          <p class="eyebrow">Google AI Studio API</p>
-          <h1>Prompt lokal, jawaban dari Gemini.</h1>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini AI - Modern Assistant</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <!-- Marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+  <div class="app-shell">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2C12 7.52285 7.52285 12 2 12C7.52285 12 12 16.4771 12 22C12 16.4771 16.4771 12 22 12C16.4771 12 12 7.52285 12 2Z"
+                fill="currentColor" />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="app-title">Gemini AI</span>
+            <span class="model-badge">
+              <span class="status-dot"></span>
+              gemini-3.6-flash
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="reset-chat-btn" class="icon-btn-secondary" title="Chat Baru">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>Chat Baru</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Chat Area -->
+    <main class="app-main">
+      <div id="chat-messages" class="chat-messages">
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon-container">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2C12 7.52285 7.52285 12 2 12C7.52285 12 12 16.4771 12 22C12 16.4771 16.4771 12 22 12C16.4771 12 12 7.52285 12 2Z"
+                fill="url(#gemini-grad)" />
+              <defs>
+                <linearGradient id="gemini-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#30605b" />
+                  <stop offset="1" stop-color="#14b8a6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h1 class="empty-title">Apa yang bisa saya bantu?</h1>
+          <p class="empty-subtitle">Tulis pertanyaan atau prompt untuk memulai percakapan.</p>
+
+          <div class="suggestions-grid">
+            <button type="button" class="suggestion-chip" data-prompt="Jelaskan konsep AI dengan sederhana">
+              <div class="chip-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+              </div>
+              <span>Jelaskan konsep AI dengan sederhana</span>
+            </button>
+
+            <button type="button" class="suggestion-chip" data-prompt="Bantu saya membuat kode Python">
+              <div class="chip-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </div>
+              <span>Bantu saya membuat kode Python</span>
+            </button>
+
+            <button type="button" class="suggestion-chip" data-prompt="Buatkan ide project">
+              <div class="chip-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" />
+                </svg>
+              </div>
+              <span>Buatkan ide project</span>
+            </button>
+
+            <button type="button" class="suggestion-chip" data-prompt="Ringkas materi ini">
+              <div class="chip-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <line x1="10" y1="9" x2="8" y2="9" />
+                </svg>
+              </div>
+              <span>Ringkas materi ini</span>
+            </button>
+          </div>
         </div>
 
-        <form id="prompt-form" class="composer">
-          <label for="prompt">Tulis prompt</label>
-          <textarea
-            id="prompt"
-            name="prompt"
-            rows="7"
-            placeholder="Contoh: Buatkan ide konten Instagram untuk kedai kopi kecil."
-          ></textarea>
-          <button type="submit" id="submit-button">Kirim Prompt</button>
+        <!-- Dynamic Conversation Stream -->
+        <div id="conversation-list" class="conversation-list"></div>
+      </div>
+
+      <!-- Sticky Bottom Composer -->
+      <div class="composer-wrapper">
+        <form id="prompt-form" class="composer-card">
+          <textarea id="prompt" name="prompt" rows="1" placeholder="Tulis prompt atau pertanyaan..."
+            aria-label="Tulis prompt"></textarea>
+
+          <button type="submit" id="submit-button" class="send-btn" title="Kirim Prompt" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </button>
         </form>
-
-        <section class="answer-panel" aria-live="polite">
-          <div class="answer-header">
-            <span>Jawaban</span>
-            <button type="button" id="copy-button" disabled>Salin</button>
-          </div>
-          <pre id="answer">Belum ada jawaban.</pre>
-        </section>
-      </section>
+        <div class="composer-footer-text">
+          Gemini dapat menghasilkan informasi yang kurang akurat. Periksa kembali respon penting.
+        </div>
+      </div>
     </main>
+  </div>
 
-    <script src="/app.js" type="module"></script>
-  </body>
+  <script src="/app.js" type="module"></script>
+</body>
+
 </html>

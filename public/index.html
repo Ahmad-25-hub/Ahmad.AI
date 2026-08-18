@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latihan Gemini API</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="Gemini prompt workspace">
+        <div class="intro">
+          <p class="eyebrow">Google AI Studio API</p>
+          <h1>Prompt lokal, jawaban dari Gemini.</h1>
+        </div>
+
+        <form id="prompt-form" class="composer">
+          <label for="prompt">Tulis prompt</label>
+          <textarea
+            id="prompt"
+            name="prompt"
+            rows="7"
+            placeholder="Contoh: Buatkan ide konten Instagram untuk kedai kopi kecil."
+          ></textarea>
+          <button type="submit" id="submit-button">Kirim Prompt</button>
+        </form>
+
+        <section class="answer-panel" aria-live="polite">
+          <div class="answer-header">
+            <span>Jawaban</span>
+            <button type="button" id="copy-button" disabled>Salin</button>
+          </div>
+          <pre id="answer">Belum ada jawaban.</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

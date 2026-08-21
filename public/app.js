@@ -7,16 +7,18 @@ const emptyState = document.querySelector("#empty-state");
 const conversationList = document.querySelector("#conversation-list");
 const resetChatBtn = document.querySelector("#reset-chat-btn");
 const suggestionChips = document.querySelectorAll(".suggestion-chip");
+const modelSelect = document.querySelector("#model-select");
 
 // Application State
 let messages = [];
 let isLoading = false;
 let pendingRenderFrame = null;
+let selectedModel = "";
 
 // SVGs
 const USER_AVATAR_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 
-const GEMINI_AVATAR_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 7.52285 7.52285 12 2 12C7.52285 12 12 16.4771 12 22C12 16.4771 16.4771 12 22 12C16.4771 12 12 7.52285 12 2Z" fill="currentColor"/></svg>`;
+const AI_AVATAR_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 7.52285 7.52285 12 2 12C7.52285 12 12 16.4771 12 22C12 16.4771 16.4771 12 22 12C16.4771 12 12 7.52285 12 2Z" fill="currentColor"/></svg>`;
 
 const COPY_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
 
@@ -140,13 +142,13 @@ function updateTextareaHeight() {
   submitButton.disabled = !hasText || isLoading;
 }
 
-// Build contents payload for conversation history (excluding error messages)
-function buildContentsPayload() {
+// Build Groq/OpenAI-compatible conversation history (excluding error messages)
+function buildMessagesPayload() {
   return messages
     .filter((msg) => !msg.error)
     .map((msg) => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.text }]
+      role: msg.role === "user" ? "user" : "assistant",
+      content: msg.text
     }));
 }
 
@@ -167,7 +169,7 @@ function renderMessages() {
 
     const avatar = document.createElement("div");
     avatar.className = `avatar ${msg.role === "user" ? "avatar-user" : "avatar-ai"}`;
-    avatar.innerHTML = msg.role === "user" ? USER_AVATAR_SVG : GEMINI_AVATAR_SVG;
+    avatar.innerHTML = msg.role === "user" ? USER_AVATAR_SVG : AI_AVATAR_SVG;
 
     const content = document.createElement("div");
     content.className = "message-content";
@@ -224,7 +226,7 @@ function renderMessages() {
 
     const avatar = document.createElement("div");
     avatar.className = "avatar avatar-ai";
-    avatar.innerHTML = GEMINI_AVATAR_SVG;
+    avatar.innerHTML = AI_AVATAR_SVG;
 
     const content = document.createElement("div");
     content.className = "message-content";
@@ -273,7 +275,8 @@ async function handleSendPrompt(promptText) {
   try {
     const payload = {
       prompt: text,
-      contents: buildContentsPayload()
+      messages: buildMessagesPayload(),
+      model: selectedModel
     };
 
     const response = await fetch("/api/generate", {
@@ -390,6 +393,35 @@ resetChatBtn.addEventListener("click", () => {
   renderMessages();
 });
 
+modelSelect.addEventListener("change", () => {
+  selectedModel = modelSelect.value;
+});
+
+async function loadModels() {
+  try {
+    const response = await fetch("/api/config");
+    const config = await response.json();
+    if (!response.ok || !Array.isArray(config.models) || !config.models.length) {
+      throw new Error(config.error || "Model tidak tersedia.");
+    }
+
+    modelSelect.innerHTML = "";
+    config.models.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = model.label;
+      modelSelect.appendChild(option);
+    });
+
+    selectedModel = config.defaultModel || config.models[0].id;
+    modelSelect.value = selectedModel;
+    modelSelect.disabled = false;
+  } catch (error) {
+    modelSelect.innerHTML = "<option>Model tidak tersedia</option>";
+    console.error("Gagal memuat daftar model:", error);
+  }
+}
+
 // Global Event Delegation for Copy Buttons
 document.addEventListener("click", async (e) => {
   // Response Copy Button
@@ -430,3 +462,4 @@ async function copyToClipboard(text, buttonEl, defaultLabel) {
 // Initial Setup
 updateTextareaHeight();
 renderMessages();
+loadModels();

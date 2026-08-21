@@ -30,10 +30,12 @@
           </div>
           <div class="brand-text">
             <span class="app-title">AhmadAI</span>
-            <span class="model-badge">
+            <label class="model-badge" for="model-select">
               <span class="status-dot"></span>
-              gemini-3.6-flash
-            </span>
+              <select id="model-select" aria-label="Pilih model AI" disabled>
+                <option>Memuat model...</option>
+              </select>
+            </label>
           </div>
         </div>
         <div class="header-actions">
@@ -134,7 +136,7 @@
           </button>
         </form>
         <div class="composer-footer-text">
-          Gemini dapat menghasilkan informasi yang kurang akurat. Periksa kembali respon penting.
+          AI dapat menghasilkan informasi yang kurang akurat. Periksa kembali respons penting.
         </div>
       </div>
     </main>

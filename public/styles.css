@@ -124,6 +124,20 @@ body {
   color: var(--accent-primary);
 }
 
+.model-badge select {
+  max-width: 230px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.model-badge select:disabled {
+  cursor: wait;
+}
+
 .status-dot {
   width: 6px;
   height: 6px;

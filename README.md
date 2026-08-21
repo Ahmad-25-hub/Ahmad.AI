@@ -1,6 +1,6 @@
-# Latihan Pakai Gemini API
+# Latihan Pakai Groq dan Gemini API
 
-Project website lokal sederhana untuk mencoba API key dari Google AI Studio.
+Website chat lokal sederhana yang dapat memakai Groq maupun Gemini API. Model dapat dipilih langsung dari dropdown di header.
 
 ## Cara menjalankan
 
@@ -10,13 +10,18 @@ Project website lokal sederhana untuk mencoba API key dari Google AI Studio.
    npm install
    ```
 
-2. Buat file `.env` dari `.env.example`, lalu isi API key:
+2. Buat file `.env` dari `.env.example`, lalu isi satu atau kedua API key beserta daftar modelnya:
 
-   ```bash
-   GEMINI_API_KEY=api_key_kamu
-   GEMINI_MODEL=gemini-3.6-flash
+   ```env
+   GROQ_API_KEY=api_key_groq_kamu
+   GROQ_MODELS=llama-3.3-70b-versatile,llama-3.1-8b-instant
+   GEMINI_API_KEY=api_key_gemini_kamu
+   GEMINI_MODELS=gemini-2.5-flash,gemini-2.5-pro
+   AI_DEFAULT_MODEL=groq:llama-3.3-70b-versatile
    PORT=3000
    ```
+
+   `GROQ_MODELS` dan `GEMINI_MODELS` adalah daftar model yang boleh dipilih, dipisahkan dengan koma. Hanya provider dengan API key yang terisi yang akan muncul di dropdown. `AI_DEFAULT_MODEL` opsional dan memakai format `provider:nama-model`.
 
 3. Jalankan website lokal:
 
@@ -24,12 +29,8 @@ Project website lokal sederhana untuk mencoba API key dari Google AI Studio.
    npm start
    ```
 
-4. Buka:
-
-   ```text
-   http://localhost:3000
-   ```
+4. Buka `http://localhost:3000`.
 
 ## Catatan keamanan
 
-Jangan taruh API key langsung di file frontend seperti `public/app.js` atau `public/index.html`, karena akan terlihat oleh browser. Project ini memakai server lokal `server.js` sebagai perantara agar API key tetap berada di `.env`.
+API key hanya dibaca oleh `server.js`; jangan simpan API key di `public/app.js` atau `public/index.html`.
